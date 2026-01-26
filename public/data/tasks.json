@@ -1,0 +1,43 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Close the Box",
+      "description": "Use the Franka robotic arm to close the box lid. Control the gripper to push the lid down until it's fully closed.",
+      "difficulty_stars": 2,
+      "expected_duration": 300,
+      "success_rate": 75,
+      "thumbnail": "/mujoco-assets/scenes/close_box.xml",
+      "time_limit": 180,
+      "mjcf_xml": "scenes/close_box.xml",
+      "checker_config": {
+        "type": "joint_position",
+        "joint_name": "box_base/box_joint",
+        "target_position": 0.0,
+        "tolerance": 0.05,
+        "comparison": "less_than"
+      },
+      "initial_state": {
+        "objects": {
+          "box": {
+            "mjcf": { "body": "box_base/", "jointPrefix": "box_base" },
+            "dof_pos": { "box_joint": 1.2 }
+          }
+        },
+        "robots": {
+          "franka": {
+            "mjcf": { "body": "franka/" }
+          }
+        }
+      },
+      "steps": [
+        { "order": 1, "description": "Move the gripper above the box lid" },
+        { "order": 2, "description": "Push the lid down to close the box" },
+        { "order": 3, "description": "Ensure the box is fully closed" }
+      ],
+      "rarity": "common",
+      "base_points": 50,
+      "category": "demo"
+    }
+  ]
+}

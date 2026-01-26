@@ -1,0 +1,431 @@
+<mujoco>
+  <default>
+    <default class="franka/">
+      <default class="franka/panda">
+        <material specular="0.5" shininess="0.25" />
+        <joint axis="0 0 1" range="-2.8973 2.8973" armature="0.10000000000000001" damping="1" />
+        <general ctrlrange="-2.8973 2.8973" forcerange="-87 87" dyntype="none" biastype="affine" />
+        <default class="franka/finger">
+          <joint type="slide" axis="0 1 0" range="0 0.040000000000000001" />
+        </default>
+        <default class="franka/visual">
+          <geom type="mesh" contype="0" conaffinity="0" group="2" />
+        </default>
+        <default class="franka/collision">
+          <geom type="mesh" group="3" />
+          <default class="franka/fingertip_pad_collision_1">
+            <geom type="box"
+              size="0.0085000000000000006 0.0040000000000000001 0.0085000000000000006"
+              pos="0 0.0054999999999999997 0.044499999999999998" />
+          </default>
+          <default class="franka/fingertip_pad_collision_2">
+            <geom type="box"
+              size="0.0030000000000000001 0.002 0.0030000000000000001"
+              pos="0.0054999999999999997 0.002 0.050000000000000003" />
+          </default>
+          <default class="franka/fingertip_pad_collision_3">
+            <geom type="box"
+              size="0.0030000000000000001 0.002 0.0030000000000000001"
+              pos="-0.0054999999999999997 0.002 0.050000000000000003" />
+          </default>
+          <default class="franka/fingertip_pad_collision_4">
+            <geom type="box"
+              size="0.0030000000000000001 0.002 0.0035000000000000001"
+              pos="0.0054999999999999997 0.002 0.0395" />
+          </default>
+          <default class="franka/fingertip_pad_collision_5">
+            <geom type="box"
+              size="0.0030000000000000001 0.002 0.0035000000000000001"
+              pos="-0.0054999999999999997 0.002 0.0395" />
+          </default>
+        </default>
+      </default>
+    </default>
+  </default>
+  <asset>
+    <material name="franka/white" class="franka/panda" rgba="1 1 1 1" />
+    <material name="franka/off_white" class="franka/panda"
+      rgba="0.90196100000000001 0.92156899999999997 0.92941200000000002 1" />
+    <material name="franka/black" class="franka/panda" rgba="0.25 0.25 0.25 1" />
+    <material name="franka/green" class="franka/panda" rgba="0 1 0 1" />
+    <material name="franka/light_blue" class="franka/panda"
+      rgba="0.039216000000000001 0.54117599999999999 0.78039199999999997 1" />
+    <mesh name="franka/link0_c" class="franka/" file="../robots/franka_emika_panda/assets/link0.stl" />
+    <mesh name="franka/link1_c" class="franka/" file="../robots/franka_emika_panda/assets/link1.stl" />
+    <mesh name="franka/link2_c" class="franka/" file="../robots/franka_emika_panda/assets/link2.stl" />
+    <mesh name="franka/link3_c" class="franka/" file="../robots/franka_emika_panda/assets/link3.stl" />
+    <mesh name="franka/link4_c" class="franka/" file="../robots/franka_emika_panda/assets/link4.stl" />
+    <mesh name="franka/link5_c0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link5_collision_0.obj" />
+    <mesh name="franka/link5_c1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link5_collision_1.obj" />
+    <mesh name="franka/link5_c2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link5_collision_2.obj" />
+    <mesh name="franka/link6_c" class="franka/" file="../robots/franka_emika_panda/assets/link6.stl" />
+    <mesh name="franka/link7_c" class="franka/" file="../robots/franka_emika_panda/assets/link7.stl" />
+    <mesh name="franka/hand_c" class="franka/" file="../robots/franka_emika_panda/assets/hand.stl" />
+    <mesh name="franka/link0_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_0.obj" />
+    <mesh name="franka/link0_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_1.obj" />
+    <mesh name="franka/link0_2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_2.obj" />
+    <mesh name="franka/link0_3" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_3.obj" />
+    <mesh name="franka/link0_4" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_4.obj" />
+    <mesh name="franka/link0_5" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_5.obj" />
+    <mesh name="franka/link0_7" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_7.obj" />
+    <mesh name="franka/link0_8" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_8.obj" />
+    <mesh name="franka/link0_9" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_9.obj" />
+    <mesh name="franka/link0_10" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_10.obj" />
+    <mesh name="franka/link0_11" class="franka/"
+      file="../robots/franka_emika_panda/assets/link0_11.obj" />
+    <mesh name="franka/link1" class="franka/" file="../robots/franka_emika_panda/assets/link1.obj" />
+    <mesh name="franka/link2" class="franka/" file="../robots/franka_emika_panda/assets/link2.obj" />
+    <mesh name="franka/link3_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link3_0.obj" />
+    <mesh name="franka/link3_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link3_1.obj" />
+    <mesh name="franka/link3_2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link3_2.obj" />
+    <mesh name="franka/link3_3" class="franka/"
+      file="../robots/franka_emika_panda/assets/link3_3.obj" />
+    <mesh name="franka/link4_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link4_0.obj" />
+    <mesh name="franka/link4_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link4_1.obj" />
+    <mesh name="franka/link4_2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link4_2.obj" />
+    <mesh name="franka/link4_3" class="franka/"
+      file="../robots/franka_emika_panda/assets/link4_3.obj" />
+    <mesh name="franka/link5_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link5_0.obj" />
+    <mesh name="franka/link5_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link5_1.obj" />
+    <mesh name="franka/link5_2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link5_2.obj" />
+    <mesh name="franka/link6_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_0.obj" />
+    <mesh name="franka/link6_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_1.obj" />
+    <mesh name="franka/link6_2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_2.obj" />
+    <mesh name="franka/link6_3" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_3.obj" />
+    <mesh name="franka/link6_4" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_4.obj" />
+    <mesh name="franka/link6_5" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_5.obj" />
+    <mesh name="franka/link6_6" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_6.obj" />
+    <mesh name="franka/link6_7" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_7.obj" />
+    <mesh name="franka/link6_8" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_8.obj" />
+    <mesh name="franka/link6_9" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_9.obj" />
+    <mesh name="franka/link6_10" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_10.obj" />
+    <mesh name="franka/link6_11" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_11.obj" />
+    <mesh name="franka/link6_12" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_12.obj" />
+    <mesh name="franka/link6_13" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_13.obj" />
+    <mesh name="franka/link6_14" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_14.obj" />
+    <mesh name="franka/link6_15" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_15.obj" />
+    <mesh name="franka/link6_16" class="franka/"
+      file="../robots/franka_emika_panda/assets/link6_16.obj" />
+    <mesh name="franka/link7_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_0.obj" />
+    <mesh name="franka/link7_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_1.obj" />
+    <mesh name="franka/link7_2" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_2.obj" />
+    <mesh name="franka/link7_3" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_3.obj" />
+    <mesh name="franka/link7_4" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_4.obj" />
+    <mesh name="franka/link7_5" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_5.obj" />
+    <mesh name="franka/link7_6" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_6.obj" />
+    <mesh name="franka/link7_7" class="franka/"
+      file="../robots/franka_emika_panda/assets/link7_7.obj" />
+    <mesh name="franka/hand_0" class="franka/" file="../robots/franka_emika_panda/assets/hand_0.obj" />
+    <mesh name="franka/hand_1" class="franka/" file="../robots/franka_emika_panda/assets/hand_1.obj" />
+    <mesh name="franka/hand_2" class="franka/" file="../robots/franka_emika_panda/assets/hand_2.obj" />
+    <mesh name="franka/hand_3" class="franka/" file="../robots/franka_emika_panda/assets/hand_3.obj" />
+    <mesh name="franka/hand_4" class="franka/" file="../robots/franka_emika_panda/assets/hand_4.obj" />
+    <mesh name="franka/finger_0" class="franka/"
+      file="../robots/franka_emika_panda/assets/finger_0.obj" />
+    <mesh name="franka/finger_1" class="franka/"
+      file="../robots/franka_emika_panda/assets/finger_1.obj" />
+  </asset>
+  <worldbody>
+    <body quat="1 0 0 0" name="franka/">
+      <inertial pos="-0.041017999999999999 -0.00013999999999999999 0.049973999999999998"
+        mass="1.0000000000000001e-09"
+        diaginertia="1.0000000000000001e-09 1.0000000000000001e-09 1.0000000000000001e-09" />
+      <light name="franka/top" class="franka/" mode="trackcom" pos="0 0 2" />
+      <body name="franka/panda_link0" childclass="franka/panda" pos="0 0 0">
+        <inertial pos="-0.041017999999999999 -0.00013999999999999999 0.049973999999999998"
+          mass="0.62976900000000002"
+          fullinertia="0.00315 0.0038800000000000002 0.0042849999999999997 8.2903999999999996e-07 0.00014999999999999999 8.2299000000000006e-06" />
+        <geom name="franka//unnamed_geom_0" class="franka/visual" material="franka/off_white"
+          mesh="franka/link0_0" />
+        <geom name="franka//unnamed_geom_1" class="franka/visual" material="franka/black"
+          mesh="franka/link0_1" />
+        <geom name="franka//unnamed_geom_2" class="franka/visual" material="franka/off_white"
+          mesh="franka/link0_2" />
+        <geom name="franka//unnamed_geom_3" class="franka/visual" material="franka/black"
+          mesh="franka/link0_3" />
+        <geom name="franka//unnamed_geom_4" class="franka/visual" material="franka/off_white"
+          mesh="franka/link0_4" />
+        <geom name="franka//unnamed_geom_5" class="franka/visual" material="franka/black"
+          mesh="franka/link0_5" />
+        <geom name="franka//unnamed_geom_6" class="franka/visual" material="franka/white"
+          mesh="franka/link0_7" />
+        <geom name="franka//unnamed_geom_7" class="franka/visual" material="franka/white"
+          mesh="franka/link0_8" />
+        <geom name="franka//unnamed_geom_8" class="franka/visual" material="franka/black"
+          mesh="franka/link0_9" />
+        <geom name="franka//unnamed_geom_9" class="franka/visual" material="franka/off_white"
+          mesh="franka/link0_10" />
+        <geom name="franka//unnamed_geom_10" class="franka/visual" material="franka/white"
+          mesh="franka/link0_11" />
+        <geom name="franka//unnamed_geom_11" class="franka/collision" mesh="franka/link0_c" />
+        <body name="franka/panda_link1" pos="0 0 0.33300000000000002">
+          <inertial pos="0.003875 0.002081 -0.047620000000000003" mass="4.9706840000000003"
+            fullinertia="0.70337000000000005 0.70660999999999996 0.0091170000000000001 -0.00013899999999999999 0.0067720000000000002 0.019168999999999999" />
+          <joint name="franka/panda_joint1" />
+          <geom name="franka//unnamed_geom_12" class="franka/visual" material="franka/white"
+            mesh="franka/link1" />
+          <geom name="franka//unnamed_geom_13" class="franka/collision" mesh="franka/link1_c" />
+          <body name="franka/panda_link2" quat="1 -1 0 0">
+            <inertial pos="-0.0031410000000000001 -0.028719999999999999 0.0034949999999999998"
+              mass="0.646926"
+              fullinertia="0.0079620000000000003 0.02811 0.025995000000000001 -0.0039249999999999997 0.010253999999999999 0.00070399999999999998" />
+            <joint name="franka/panda_joint2" range="-1.7627999999999999 1.7627999999999999" />
+            <geom name="franka//unnamed_geom_14" class="franka/visual" material="franka/white"
+              mesh="franka/link2" />
+            <geom name="franka//unnamed_geom_15" class="franka/collision" mesh="franka/link2_c" />
+            <body name="franka/panda_link3" pos="0 -0.316 0" quat="1 1 0 0">
+              <joint name="franka/panda_joint3" />
+              <inertial pos="0.027518000000000001 0.039252000000000002 -0.066502000000000006"
+                mass="3.2286039999999998"
+                fullinertia="0.037241999999999997 0.036155 0.010829999999999999 -0.0047609999999999996 -0.011396 -0.012805" />
+              <geom name="franka//unnamed_geom_16" class="franka/visual" material="franka/white"
+                mesh="franka/link3_0" />
+              <geom name="franka//unnamed_geom_17" class="franka/visual" material="franka/white"
+                mesh="franka/link3_1" />
+              <geom name="franka//unnamed_geom_18" class="franka/visual" material="franka/white"
+                mesh="franka/link3_2" />
+              <geom name="franka//unnamed_geom_19" class="franka/visual" material="franka/black"
+                mesh="franka/link3_3" />
+              <geom name="franka//unnamed_geom_20" class="franka/collision" mesh="franka/link3_c" />
+              <body name="franka/panda_link4" pos="0.082500000000000004 0 0" quat="1 1 0 0">
+                <inertial pos="-0.053170000000000002 0.104419 0.027453999999999999"
+                  mass="3.5878950000000001"
+                  fullinertia="0.025853000000000001 0.019552 0.028323000000000001 0.007796 -0.0013320000000000001 0.0086409999999999994" />
+                <joint name="franka/panda_joint4" range="-3.0718000000000001 -0.069800000000000001" />
+                <geom name="franka//unnamed_geom_21" class="franka/visual" material="franka/white"
+                  mesh="franka/link4_0" />
+                <geom name="franka//unnamed_geom_22" class="franka/visual" material="franka/white"
+                  mesh="franka/link4_1" />
+                <geom name="franka//unnamed_geom_23" class="franka/visual" material="franka/black"
+                  mesh="franka/link4_2" />
+                <geom name="franka//unnamed_geom_24" class="franka/visual" material="franka/white"
+                  mesh="franka/link4_3" />
+                <geom name="franka//unnamed_geom_25" class="franka/collision" mesh="franka/link4_c" />
+                <body name="franka/panda_link5" pos="-0.082500000000000004 0.38400000000000001 0"
+                  quat="1 -1 0 0">
+                  <inertial pos="-0.011953 0.041064999999999997 -0.038436999999999999"
+                    mass="1.225946"
+                    fullinertia="0.035548999999999997 0.029474 0.0086269999999999993 -0.002117 -0.0040369999999999998 0.00022900000000000001" />
+                  <joint name="franka/panda_joint5" />
+                  <geom name="franka//unnamed_geom_26" class="franka/visual" material="franka/black"
+                    mesh="franka/link5_0" />
+                  <geom name="franka//unnamed_geom_27" class="franka/visual" material="franka/white"
+                    mesh="franka/link5_1" />
+                  <geom name="franka//unnamed_geom_28" class="franka/visual" material="franka/white"
+                    mesh="franka/link5_2" />
+                  <geom name="franka//unnamed_geom_29" class="franka/collision"
+                    mesh="franka/link5_c0" />
+                  <geom name="franka//unnamed_geom_30" class="franka/collision"
+                    mesh="franka/link5_c1" />
+                  <geom name="franka//unnamed_geom_31" class="franka/collision"
+                    mesh="franka/link5_c2" />
+                  <body name="franka/panda_link6" quat="1 1 0 0">
+                    <inertial pos="0.060149000000000001 -0.014116999999999999 -0.010517"
+                      mass="1.666555"
+                      fullinertia="0.001964 0.0043540000000000002 0.0054330000000000003 0.00010900000000000001 -0.001158 0.00034099999999999999" />
+                    <joint name="franka/panda_joint6"
+                      range="-0.017500000000000002 3.7524999999999999" />
+                    <geom name="franka//unnamed_geom_32" class="franka/visual"
+                      material="franka/off_white" mesh="franka/link6_0" />
+                    <geom name="franka//unnamed_geom_33" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_1" />
+                    <geom name="franka//unnamed_geom_34" class="franka/visual"
+                      material="franka/black" mesh="franka/link6_2" />
+                    <geom name="franka//unnamed_geom_35" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_3" />
+                    <geom name="franka//unnamed_geom_36" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_4" />
+                    <geom name="franka//unnamed_geom_37" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_5" />
+                    <geom name="franka//unnamed_geom_38" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_6" />
+                    <geom name="franka//unnamed_geom_39" class="franka/visual"
+                      material="franka/light_blue" mesh="franka/link6_7" />
+                    <geom name="franka//unnamed_geom_40" class="franka/visual"
+                      material="franka/light_blue" mesh="franka/link6_8" />
+                    <geom name="franka//unnamed_geom_41" class="franka/visual"
+                      material="franka/black" mesh="franka/link6_9" />
+                    <geom name="franka//unnamed_geom_42" class="franka/visual"
+                      material="franka/black" mesh="franka/link6_10" />
+                    <geom name="franka//unnamed_geom_43" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_11" />
+                    <geom name="franka//unnamed_geom_44" class="franka/visual"
+                      material="franka/green" mesh="franka/link6_12" />
+                    <geom name="franka//unnamed_geom_45" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_13" />
+                    <geom name="franka//unnamed_geom_46" class="franka/visual"
+                      material="franka/black" mesh="franka/link6_14" />
+                    <geom name="franka//unnamed_geom_47" class="franka/visual"
+                      material="franka/black" mesh="franka/link6_15" />
+                    <geom name="franka//unnamed_geom_48" class="franka/visual"
+                      material="franka/white" mesh="franka/link6_16" />
+                    <geom name="franka//unnamed_geom_49" class="franka/collision"
+                      mesh="franka/link6_c" />
+                    <body name="franka/panda_link7" pos="0.087999999999999995 0 0" quat="1 1 0 0">
+                      <inertial pos="0.010517 -0.0042519999999999997 0.061596999999999999"
+                        mass="0.73552200000000001"
+                        fullinertia="0.012515999999999999 0.010026999999999999 0.0048149999999999998 -0.000428 -0.001196 -0.00074100000000000001" />
+                      <joint name="franka/panda_joint7" />
+                      <geom name="franka//unnamed_geom_50" class="franka/visual"
+                        material="franka/white" mesh="franka/link7_0" />
+                      <geom name="franka//unnamed_geom_51" class="franka/visual"
+                        material="franka/black" mesh="franka/link7_1" />
+                      <geom name="franka//unnamed_geom_52" class="franka/visual"
+                        material="franka/black" mesh="franka/link7_2" />
+                      <geom name="franka//unnamed_geom_53" class="franka/visual"
+                        material="franka/black" mesh="franka/link7_3" />
+                      <geom name="franka//unnamed_geom_54" class="franka/visual"
+                        material="franka/black" mesh="franka/link7_4" />
+                      <geom name="franka//unnamed_geom_55" class="franka/visual"
+                        material="franka/black" mesh="franka/link7_5" />
+                      <geom name="franka//unnamed_geom_56" class="franka/visual"
+                        material="franka/black" mesh="franka/link7_6" />
+                      <geom name="franka//unnamed_geom_57" class="franka/visual"
+                        material="franka/white" mesh="franka/link7_7" />
+                      <geom name="franka//unnamed_geom_58" class="franka/collision"
+                        mesh="franka/link7_c" />
+                      <body name="franka/panda_hand" pos="0 0 0.107"
+                        quat="0.92387949999999996 0 0 -0.38268340000000001">
+                        <inertial pos="-0.01 0 0.029999999999999999" mass="0.72999999999999998"
+                          diaginertia="0.001 0.0025000000000000001 0.0016999999999999999" />
+                        <geom name="franka//unnamed_geom_59" class="franka/visual"
+                          material="franka/off_white" mesh="franka/hand_0" />
+                        <geom name="franka//unnamed_geom_60" class="franka/visual"
+                          material="franka/black" mesh="franka/hand_1" />
+                        <geom name="franka//unnamed_geom_61" class="franka/visual"
+                          material="franka/black" mesh="franka/hand_2" />
+                        <geom name="franka//unnamed_geom_62" class="franka/visual"
+                          material="franka/white" mesh="franka/hand_3" />
+                        <geom name="franka//unnamed_geom_63" class="franka/visual"
+                          material="franka/off_white" mesh="franka/hand_4" />
+                        <geom name="franka//unnamed_geom_64" class="franka/collision"
+                          mesh="franka/hand_c" />
+                        <body name="franka/panda_leftfinger" pos="0 0 0.058400000000000001">
+                          <inertial pos="0 0 0" mass="0.014999999999999999"
+                            diaginertia="2.3750000000000001e-06 2.3750000000000001e-06 7.5000000000000002e-07" />
+                          <joint name="franka/panda_finger_joint1" class="franka/finger" />
+                          <geom name="franka//unnamed_geom_65" class="franka/visual"
+                            material="franka/off_white" mesh="franka/finger_0" />
+                          <geom name="franka//unnamed_geom_66" class="franka/visual"
+                            material="franka/black" mesh="franka/finger_1" />
+                          <geom name="franka//unnamed_geom_67" class="franka/collision"
+                            mesh="franka/finger_0" />
+                          <geom name="franka//unnamed_geom_68"
+                            class="franka/fingertip_pad_collision_1" />
+                          <geom name="franka//unnamed_geom_69"
+                            class="franka/fingertip_pad_collision_2" />
+                          <geom name="franka//unnamed_geom_70"
+                            class="franka/fingertip_pad_collision_3" />
+                          <geom name="franka//unnamed_geom_71"
+                            class="franka/fingertip_pad_collision_4" />
+                          <geom name="franka//unnamed_geom_72"
+                            class="franka/fingertip_pad_collision_5" />
+                        </body>
+                        <body name="franka/panda_rightfinger" pos="0 0 0.058400000000000001"
+                          quat="0 0 0 1">
+                          <inertial pos="0 0 0" mass="0.014999999999999999"
+                            diaginertia="2.3750000000000001e-06 2.3750000000000001e-06 7.5000000000000002e-07" />
+                          <joint name="franka/panda_finger_joint2" class="franka/finger" />
+                          <geom name="franka//unnamed_geom_73" class="franka/visual"
+                            material="franka/off_white" mesh="franka/finger_0" />
+                          <geom name="franka//unnamed_geom_74" class="franka/visual"
+                            material="franka/black" mesh="franka/finger_1" />
+                          <geom name="franka//unnamed_geom_75" class="franka/collision"
+                            mesh="franka/finger_0" />
+                          <geom name="franka//unnamed_geom_76"
+                            class="franka/fingertip_pad_collision_1" />
+                          <geom name="franka//unnamed_geom_77"
+                            class="franka/fingertip_pad_collision_2" />
+                          <geom name="franka//unnamed_geom_78"
+                            class="franka/fingertip_pad_collision_3" />
+                          <geom name="franka//unnamed_geom_79"
+                            class="franka/fingertip_pad_collision_4" />
+                          <geom name="franka//unnamed_geom_80"
+                            class="franka/fingertip_pad_collision_5" />
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <tendon>
+    <fixed name="franka/split" class="franka/">
+      <joint joint="franka/panda_finger_joint1" coef="0.5" />
+      <joint joint="franka/panda_finger_joint2" coef="0.5" />
+    </fixed>
+  </tendon>
+  <actuator>
+    <general name="franka/panda_joint1" class="franka/" forcerange="-40 40"
+      joint="franka/panda_joint1" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <general name="franka/panda_joint2" class="franka/"
+      ctrlrange="-1.7627999999999999 1.7627999999999999" forcerange="-40 40"
+      joint="franka/panda_joint2" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <general name="franka/panda_joint3" class="franka/" forcerange="-40 40"
+      joint="franka/panda_joint3" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <general name="franka/panda_joint4" class="franka/"
+      ctrlrange="-3.0718000000000001 -0.069800000000000001" forcerange="-40 40"
+      joint="franka/panda_joint4" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <general name="franka/panda_joint5" class="franka/" forcerange="-40 40"
+      joint="franka/panda_joint5" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <general name="franka/panda_joint6" class="franka/"
+      ctrlrange="-0.017500000000000002 3.7524999999999999" forcerange="-40 40"
+      joint="franka/panda_joint6" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <general name="franka/panda_joint7" class="franka/" forcerange="-40 40"
+      joint="franka/panda_joint7" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+    <position name="franka/panda_finger_joint1" class="franka/" ctrlrange="0 0.040000000000000001"
+      forcerange="-200 200" joint="franka/panda_finger_joint1" kp="200" kv="5" />
+    <position name="franka/panda_finger_joint2" class="franka/" ctrlrange="0 0.040000000000000001"
+      forcerange="-200 200" joint="franka/panda_finger_joint2" kp="200" kv="5" />
+  </actuator>
+</mujoco>

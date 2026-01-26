@@ -1,0 +1,29 @@
+<mujoco model="unnamed_model">
+  <compiler autolimits="true" angle="radian" eulerseq="zyx" />
+  <option timestep="0.001" gravity="0 0 -9.8100000000000005" integrator="implicitfast" solver="PGS"
+    iterations="50" />
+  <default>
+    <default class="/" />
+  </default>
+  <asset>
+    <texture name="texplane" type="2d" builtin="checker"
+      rgb1="0.71999999999999997 0.73999999999999999 0.78000000000000003"
+      rgb2="0.92000000000000004 0.93999999999999995 0.96999999999999997" mark="edge"
+      markrgb="0.97999999999999998 0.78000000000000003 0.5" width="512" height="512" />
+    <material name="matplane" class="/" texture="texplane" texrepeat="2 2" texuniform="true"
+      emission="0.050000000000000003" specular="0.20000000000000001" shininess="0.40000000000000002"
+      reflectance="0" />
+  </asset>
+  <include file="../includes/box_base.xml" />
+  <include file="../includes/franka_panda.xml" />
+  <custom>
+    <text name="axis:domain_randomization" data='{"objects":{"box":{"mjcf":{"body":"box_base/","jointPrefix":"box_base"},"pos_delta":[[-0.05,0.05],[-0.05,0.05],[-0.02,0.02]],"rot_delta":[[-0.1,0.1],[-0.1,0.1],[-0.5,0.5]],"dof_pos_delta":{"box_joint":[-0.2,0.2]}}},"robots":{"franka":{"mjcf":{"body":"franka/"},"dof_pos_delta":{"panda_joint1":[-0.05,0.05],"panda_joint2":[-0.05,0.05],"panda_joint3":[-0.05,0.05],"panda_joint4":[-0.05,0.05],"panda_joint5":[-0.05,0.05],"panda_joint6":[-0.05,0.05],"panda_joint7":[-0.05,0.05]}}}}' />
+  </custom>
+  <worldbody>
+    <geom name="//unnamed_geom_0" class="/" type="plane" conaffinity="15" condim="3"
+      size="100 100 0.001" material="matplane" pos="0 0 0" quat="1 0 0 0" />
+    <camera name="camera0_custom" class="/" mode="fixed" fovy="47.168554019879465"
+      pos="1.5 -1.5 1.5"
+      xyaxes="0.70710678118654746 0.70710678118654746 -0 -0.40824829046386296 0.40824829046386296 0.81649658092772592" />
+  </worldbody>
+</mujoco>

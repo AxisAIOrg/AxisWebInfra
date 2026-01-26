@@ -1,0 +1,105 @@
+<mujoco>
+  <default>
+    <default class="box_base/">
+      <joint limited="true" armature="0.01" damping="5.0" frictionloss="0.5" />
+      <geom contype="1" conaffinity="15" condim="4"
+        friction="0.90000000000000002 0.20000000000000001 0.20000000000000001" solref="0.001 2" />
+      <equality solref="0.001 2" />
+      <motor ctrllimited="true" />
+      <default class="box_base/visualgeom">
+        <geom contype="0" conaffinity="0" condim="1" material="box_base/visualgeom" />
+      </default>
+    </default>
+  </default>
+  <asset>
+    <texture name="box_base/texplane" type="2d" builtin="checker" rgb1="0 0 0"
+      rgb2="0.80000000000000004 0.80000000000000004 0.80000000000000004" width="100" height="100" />
+    <material name="box_base/matplane" class="box_base/" texture="box_base/texplane" texrepeat="1 1"
+      texuniform="true" reflectance="0" />
+    <material name="box_base/visualgeom" class="box_base/"
+      rgba="0.5 0.90000000000000002 0.20000000000000001 1" />
+  </asset>
+  <worldbody>
+    <!-- Fixed key light so brightness doesn't change when box moves. -->
+    <light name="box_base/world_key" directional="true" castshadow="false"
+      pos="0 0 5" dir="0 0 -1" diffuse="0.2 0.2 0.2" specular="0.05 0.05 0.05" />
+    <!-- Rotate the box so the lid/door faces upward; flip 180° around Z to open right. -->
+    <body pos="0.5 0.3 0.2" quat="0 0.707107 0 0.707107" name="box_base/">
+      <joint name="box_base/freejoint" type="free" />
+      <camera name="box_base/fixed" class="box_base/" pos="0 -3 0.67500199999999999"
+        xyaxes="1 0 0 0 0 1" />
+      <camera name="box_base/track" class="box_base/" mode="trackcom" pos="0 -3 0.67500199999999999"
+        xyaxes="1 0 0 0 0 1" />
+      <body name="box_base/root" pos="0 0 0" quat="1 0 0 0">
+        <site name="box_base/imu" class="box_base/" size="0.01" pos="0 0 0" />
+        <geom name="box_base/box_base5_collision" class="box_base/visualgeom" type="box" contype="1"
+          conaffinity="0" group="1" size="0.125 0.074999999999999997 0.0050000000000000001"
+          density="0" pos="0.00023499999999999999 -9.9999999999999995e-07 -0.17500199999999999"
+          quat="-8.6077500000000007e-06 0.70710700000000004 0.70710700000000004 -8.3628099999999996e-06" />
+        <geom name="box_base//unnamed_geom_1" class="box_base/" type="box"
+          size="0.125 0.074999999999999997 0.0050000000000000001" rgba=""
+          pos="0.00023499999999999999 -9.9999999999999995e-07 -0.17500199999999999"
+          quat="-8.6077500000000007e-06 0.70710700000000004 0.70710700000000004 -8.3628099999999996e-06" />
+        <geom name="box_base/box_base4_collision" class="box_base/visualgeom" type="box" contype="1"
+          conaffinity="0" group="1" size="0.125 0.17499999999999999 0.00050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1" density="0"
+          pos="-0.074754000000000001 9.9999999999999995e-07 1.9999999999999999e-06"
+          quat="0.50000199999999995 0.499998 0.499998 0.50000199999999995" />
+        <geom name="box_base//unnamed_geom_3" class="box_base/" type="box"
+          size="0.125 0.17499999999999999 0.00050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1"
+          pos="-0.074754000000000001 9.9999999999999995e-07 1.9999999999999999e-06"
+          quat="0.50000199999999995 0.499998 0.499998 0.50000199999999995" />
+        <geom name="box_base/box_base3_collision" class="box_base/visualgeom" type="box" contype="1"
+          conaffinity="0" group="1"
+          size="0.074999999999999997 0.17499999999999999 0.0050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1" density="0"
+          pos="0.00025399999999999999 0.124999 5.0000000000000004e-06"
+          quat="-3.3044500000000002e-06 -8.7163600000000007e-06 0.70710700000000004 0.70710700000000004" />
+        <geom name="box_base//unnamed_geom_5" class="box_base/" type="box"
+          size="0.074999999999999997 0.17499999999999999 0.0050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1"
+          pos="0.00025399999999999999 0.124999 5.0000000000000004e-06"
+          quat="-3.3044500000000002e-06 -8.7163600000000007e-06 0.70710700000000004 0.70710700000000004" />
+        <geom name="box_base/box_base2_collision" class="box_base/visualgeom" type="box" contype="1"
+          conaffinity="0" group="1"
+          size="0.074999999999999997 0.17499999999999999 0.0050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1" density="0"
+          pos="0.00024600000000000002 -0.124999 1.9999999999999999e-06"
+          quat="-6.4864299999999998e-06 -1.1898299999999999e-05 0.70710700000000004 0.70710700000000004" />
+        <geom name="box_base//unnamed_geom_7" class="box_base/" type="box"
+          size="0.074999999999999997 0.17499999999999999 0.0050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1"
+          pos="0.00024600000000000002 -0.124999 1.9999999999999999e-06"
+          quat="-6.4864299999999998e-06 -1.1898299999999999e-05 0.70710700000000004 0.70710700000000004" />
+        <geom name="box_base/box_base_collision" class="box_base/visualgeom" type="box" contype="1"
+          conaffinity="0" group="1" size="0.125 0.074999999999999997 0.0050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1" density="0"
+          pos="0.00024499999999999999 9.9999999999999995e-07 0.17500199999999999"
+          quat="-6.4864299999999998e-06 0.70710700000000004 0.70710700000000004 -6.2414899999999996e-06" />
+        <geom name="box_base//unnamed_geom_9" class="box_base/" type="box"
+          size="0.125 0.074999999999999997 0.0050000000000000001"
+          rgba="0.84999999999999998 0.84999999999999998 1 1"
+          pos="0.00024499999999999999 9.9999999999999995e-07 0.17500199999999999"
+          quat="-6.4864299999999998e-06 0.70710700000000004 0.70710700000000004 -6.2414899999999996e-06" />
+        <body name="box_base/box_lid" pos="0.086229 -0.123002 2.0000000000000002e-05"
+          quat="-1.07291e-05 0.70710899999999999 0.70710399999999995 -1.1191200000000001e-05">
+          <inertial pos="0.12600900000000001 0.038258 -6.9999999999999994e-05"
+            quat="0.5 0.5 -0.5 0.5" mass="0.93799999999999994"
+            diaginertia="0.015189599999999999 0.0095832399999999998 0.0056220599999999999" />
+          <joint name="box_base/box_joint" class="box_base/" pos="0 0 0" axis="0 0 1"
+            actuatorfrcrange="-10 10" range="-0.25307299999999999 2.3649200000000001" />
+          <geom name="box_base/box_lid" class="box_base/visualgeom" type="box" contype="1"
+            conaffinity="0" group="1"
+            size="0.13400000000000001 0.17499999999999999 0.0050000000000000001" density="0"
+            pos="0.12600900000000001 0.038258 -6.9999999999999994e-05"
+            quat="-0.70104900000000003 0.701067 0.092288499999999996 -0.092290899999999995" />
+          <geom name="box_base//unnamed_geom_11" class="box_base/" type="box"
+            size="0.13400000000000001 0.17499999999999999 0.0050000000000000001" rgba=""
+            pos="0.12600900000000001 0.038258 -6.9999999999999994e-05"
+            quat="-0.70104900000000003 0.701067 0.092288499999999996 -0.092290899999999995" />
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
