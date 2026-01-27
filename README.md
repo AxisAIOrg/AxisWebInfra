@@ -187,6 +187,10 @@ npm start
 - **Tailwind CSS** - Styling framework
 - **TypeScript** - Type safety
 
+## Acknowledgements
+
+We gratefully acknowledge the use of [mujocoWASM](https://github.com/zalo/mujoco_wasm).
+
 ## License
 
 MIT License
