@@ -1,6 +1,6 @@
-# MuJoCo Robot Control Demo
+# MuJoCo Robot Control Infra
 
-An open-source robot teleoperation demo using MuJoCo physics simulation. Control a Franka Emika Panda robotic arm with keyboard to complete various tasks.
+An open-source robot teleoperation infra using MuJoCo physics simulation. Control a Franka Emika Panda robotic arm with keyboard to complete various tasks.
 
 ## Features
 
