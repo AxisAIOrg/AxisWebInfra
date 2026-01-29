@@ -2,7 +2,7 @@
 
 # AxisWebInfra
 
-**An open-source robot teleoperation platform using MuJoCo physics simulation**
+**An open-source robot teleoperation platform using MuJoCo physics simulation in the broswer!**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
