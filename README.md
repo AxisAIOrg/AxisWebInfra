@@ -21,13 +21,9 @@ Control a **Franka Emika Panda** robotic arm with keyboard inputs to complete va
 
 ## Demo Video
 
-[axis-web-infra-demo-task1.mp4](public/media/axis-web-infra-demo-task1.mp4)
 
 https://github.com/user-attachments/assets/6f25324c-f765-45a0-8658-d4e4c4e4ec1e
 
-
-
-> Local file: `public/media/axis-web-infra-demo-task1.mp4`
 
 <div align="center">
 <br>
