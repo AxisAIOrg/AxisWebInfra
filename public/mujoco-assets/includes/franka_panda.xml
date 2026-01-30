@@ -407,22 +407,22 @@
   </tendon>
   <actuator>
     <general name="franka/panda_joint1" class="franka/" forcerange="-40 40"
-      joint="franka/panda_joint1" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint1" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <general name="franka/panda_joint2" class="franka/"
       ctrlrange="-1.7627999999999999 1.7627999999999999" forcerange="-40 40"
-      joint="franka/panda_joint2" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint2" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <general name="franka/panda_joint3" class="franka/" forcerange="-40 40"
-      joint="franka/panda_joint3" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint3" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <general name="franka/panda_joint4" class="franka/"
       ctrlrange="-3.0718000000000001 -0.069800000000000001" forcerange="-40 40"
-      joint="franka/panda_joint4" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint4" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <general name="franka/panda_joint5" class="franka/" forcerange="-40 40"
-      joint="franka/panda_joint5" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint5" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <general name="franka/panda_joint6" class="franka/"
       ctrlrange="-0.017500000000000002 3.7524999999999999" forcerange="-40 40"
-      joint="franka/panda_joint6" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint6" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <general name="franka/panda_joint7" class="franka/" forcerange="-40 40"
-      joint="franka/panda_joint7" biastype="affine" gainprm="10000 0 0" biasprm="0 -10000 -250" />
+      joint="franka/panda_joint7" biastype="affine" gainprm="4000 0 0" biasprm="0 -4000 -400" />
     <position name="franka/panda_finger_joint1" class="franka/" ctrlrange="0 0.040000000000000001"
       forcerange="-200 200" joint="franka/panda_finger_joint1" kp="200" kv="5" />
     <position name="franka/panda_finger_joint2" class="franka/" ctrlrange="0 0.040000000000000001"

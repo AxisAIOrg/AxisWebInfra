@@ -5,44 +5,77 @@ const DEFAULT_CONFIG = {
   endEffectorBodyName: null,
   jointNames: [],
   mode: 'auto', // 'auto' | 'free' | 'joint'
-  translationGain: 1.0,
-  rotationGain: 0.5,
+  translationGain: 0.3,
+  rotationGain: 0.3,
   maxIterations: 5,
+  // Joint step limit per IK iteration (radians).
+  // This limits how much each joint can change per solve, not the overall speed.
+  // Overall speed is controlled by translationSpeed in teleopController.js
   stepLimit: 0.05,
   // IK cost weights (roughly matching the JAX example):
   // - Pose cost: pos_weight / ori_weight (acts like W on the 6D pose residual)
   // - Limit cost: penalize approaching joint limits
+  // Increased posWeight to make position tracking more aggressive (helps resist gravity)
   posWeight: 50.0,
-  oriWeight: 10.0,
-  limitWeight: 100.0,
+  oriWeight: 100.0,
+  // NOTE: limitWeight was 100.0 but caused issues with robots whose home pose
+  // is already near joint limits (e.g., Gen3 joint_4 = -2.27 with limit -2.57).
+  // Reduced to allow IK to prioritize pose tracking over limit avoidance.
+  limitWeight: 10.0,
 
   // UX: when the user is only translating (XYZ), we usually want to strongly keep orientation
   // instead of allowing the solver to "spend" orientation error to satisfy position.
   // This reduces the "move xyz but EE rotates" feeling.
   holdOrientationOnTranslate: true,
-  holdOriWeight: 200.0,
+  holdOriWeight: 2000.0,
   // Hard lock: when translating, force targetQuaternion to stay fixed (copied from EE at start of translation).
   lockOrientationOnTranslate: true,
 
   // Trust-region / LM damping (lambda). Higher => more stable, but "softer".
-  lambdaInitial: 1.0,
+  // Reduced to make IK more aggressive (faster response, better gravity resistance)
+  lambdaInitial: 0.1,
   lambdaFactor: 2.0,
   lambdaMin: 1e-5,
-  lambdaMax: 1e10,
+  lambdaMax: 10.0,
   stepQualityMin: 1e-3,
-  lmMaxTrials: 6,
+  lmMaxTrials: 10,
+
+  // Jacobian Transpose Fallback: when LM fails (e.g., at joint limits), use this simpler method.
+  // This avoids getting stuck but may be less precise. Apply extra damping to prevent oscillation.
+  useJacobianTransposeFallback: true,
+  jtFallbackDampingScale: 1.5,  // Increased from 1.0 for faster JT response (closer to LM speed)
+  jtFallbackUseGain: true,      // Apply translation/rotation gains to JT error vector
+  jtFallbackMaxConsecutive: 10, // After this many consecutive JT fallbacks, snap to current
+
+  // Smart solver selection: skip expensive LM computation when joints are near limits.
+  // This improves frame rate when operating near joint boundaries.
+  useSmartSolverSelection: true,
+  // Threshold for "near limit" detection (as fraction of joint range).
+  // 0.03 means within 3% of either limit triggers direct JT usage.
+  smartSelectionMarginFraction: 0.02,
+
+  // Safety margin: prevent joints from entering dangerous territory near limits.
+  // When a joint is within this margin of its limit, block movements toward the limit.
+  // This creates a "soft wall" before the actual joint limit.
+  useSafetyMargin: true,
+  // Safety margin as fraction of joint range (0.04 = 4% of range).
+  // Movements away from the limit are always allowed.
+  safetyMarginFraction: 0.06,
 
   // Joint-limit soft barrier region as a fraction of joint range.
-  // Example: 0.1 means penalize when within 10% of either end of the allowed range.
-  limitMarginFraction: 0.1,
+  // Example: 0.05 means penalize when within 5% of either end of the allowed range.
+  // NOTE: Reduced from 0.1 to 0.05 because some robots (e.g., Gen3) have home poses
+  // that are already within the 10% margin, causing limit penalties to dominate IK.
+  limitMarginFraction: 0.05,
 
   // Stall protection: if LM steps stop reducing error (often due to contact/force limits),
   // stop pushing to avoid drifting joints into limits.
   stallMinImprovement: 1e-4,
-  stallMaxIterations: 2,
+  stallMaxIterations: 3,
 
   // When stalled (typically contact/force-limit), snap target to current EE pose to prevent
   // target windup. Otherwise releasing contact causes an extra drift as IK "catches up".
+  // DISABLED: With gravcomp enabled, we want the robot to persistently try to reach the target.
   snapTargetToCurrentOnStall: true,
 
   // Dynamic-sim IK safety:
@@ -52,8 +85,33 @@ const DEFAULT_CONFIG = {
 
   // Anti-windup: clamp desired ctrl target around current qpos.
   // This prevents joints from drifting to limits when the end-effector is blocked by contact.
-  maxCtrlOffset: 0.25, // radians (or meters for slide joints)
+  // Increased to allow larger ctrl-qpos offset, generating more force to resist gravity.
+  maxCtrlOffset: 0.5, // radians (or meters for slide joints)
 };
+
+// --- DEBUG LOGGING SETUP ---
+if (typeof window !== 'undefined') {
+  window.axisDebugLogs = [];
+  window.downloadDebugLogs = function() {
+    const blob = new Blob([window.axisDebugLogs.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'axis_debug_logs.txt';
+    a.click();
+    console.log('Logs downloaded!');
+  };
+  console.log('Debug logging enabled. Run window.downloadDebugLogs() to save logs.');
+}
+
+function logDebug(msg) {
+  if (typeof window === 'undefined') return;
+  const timestamp = new Date().toISOString().split('T')[1].replace('Z', '');
+  const entry = `[${timestamp}] ${msg}`;
+  window.axisDebugLogs.push(entry);
+  if (window.axisDebugLogs.length > 5000) window.axisDebugLogs.shift();
+}
+// ---------------------------
 
 export class IKController {
   constructor(mujoco, model, data, config = {}) {
@@ -106,6 +164,7 @@ export class IKController {
     this._stallCount = 0;
     this._lastSolveError = null;
     this._lmLambda = this.config.lambdaInitial ?? 1.0;
+    this._jtFallbackCount = 0;  // Track consecutive Jacobian Transpose fallbacks
     
     // CRITICAL: Sync actuator ctrl values to match current qpos values
     // This ensures the robot maintains its current pose when simulation starts
@@ -496,23 +555,34 @@ export class IKController {
   }
 
   adjustTargetPosition(delta) {
-    if (!this._adjustPosCallCount) this._adjustPosCallCount = 0;
-    this._adjustPosCallCount++;
-    if (this._adjustPosCallCount <= 3) {
-      // console.log('[IKController] adjustTargetPosition called:', {
-      //   delta: delta,
-      //   targetInitialized: this.targetInitialized
-      // });
-    }
     if (!this.targetInitialized) { 
       this.syncTargetsFromModel(); 
     }
 
+    // IMPORTANT: Anti-windup for target position.
+    // Without this, when the user holds a direction key, targetPosition accumulates
+    // faster than IK can track, causing "lag" when switching directions.
+    // Solution: Before adding delta, clamp targetPosition to be within maxTargetLead
+    // distance from the current end-effector position.
+    this.mujoco.mj_forward(this.model, this.data);
+    this.readCurrentPose();
+
+    // Maximum allowed distance between target and current EE position
+    const maxTargetLead = this.config.maxTargetLead ?? 0.03; // meters
+    const currentToTarget = this.targetPosition.clone().sub(this.currentPose.position);
+    const leadDistance = currentToTarget.length();
+    
+    if (leadDistance > maxTargetLead && leadDistance > 1e-6) {
+      // Pull target back towards current position
+      const clampedOffset = currentToTarget.normalize().multiplyScalar(maxTargetLead);
+      this.targetPosition.copy(this.currentPose.position).add(clampedOffset);
+    }
+
     if (this.config.lockOrientationOnTranslate) {
-      this.mujoco.mj_forward(this.model, this.data);
-      this.readCurrentPose();
+      // Use the existing targetQuaternion as the lock reference, NOT the current pose.
+      // This prevents "drift accumulation" where the robot accepts error as the new target.
       if (!this._lockedOrientationActive) {
-        this._lockedQuaternion.copy(this.currentPose.quaternion).normalize();
+        this._lockedQuaternion.copy(this.targetQuaternion).normalize();
         this._lockedOrientationActive = true;
       }
       this.targetQuaternion.copy(this._lockedQuaternion).normalize();
@@ -584,6 +654,7 @@ export class IKController {
       }
 
       const errorMagnitude = this.computePoseError();
+
       // Stall guard (target anti-windup):
       const stallMinImprovement = this.config.stallMinImprovement ?? 1e-4;
       const stallMaxIterations = this.config.stallMaxIterations ?? 2;
@@ -599,11 +670,11 @@ export class IKController {
 
       if ((stallMaxIterations > 0) && (this._stallCount >= stallMaxIterations)) {
         if (this.config.snapTargetToCurrentOnStall) {
-          this.targetPosition.copy(this.currentPose.position);
-          this.targetQuaternion.copy(this.currentPose.quaternion).normalize();
+          this._snapTargetToCurrent();
+        } else {
+          this.targetDirty = false;
+          this._stallCount = 0;
         }
-        this.targetDirty = false;
-        this._stallCount = 0;
         break;
       }
       if (errorMagnitude < 1e-3) {
@@ -616,9 +687,64 @@ export class IKController {
       }
 
       const jacobian = this.computeNumericalJacobian();
-      // LM / trust-region least-squares step, similar to the JAX version:
-      // (J^T W J + λ I) Δ = J^T W e  (+ joint-limit cost)
-      const step = this.computeLevenbergMarquardtStep(jacobian);
+
+      // Smart solver selection: if joints are near limits, skip expensive LM and use JT directly.
+      // This significantly improves frame rate when operating near joint boundaries.
+      const useSmartSelection = this.config.useSmartSolverSelection !== false;
+      const nearLimit = useSmartSelection && this.isAnyJointNearLimit();
+      
+      let step = null;
+      let usedFallback = false;
+      
+      if (nearLimit && this.config.useJacobianTransposeFallback !== false) {
+        // Joints near limit - use JT directly to save computation
+        step = this.computeJacobianTransposeFallbackStep(jacobian);
+        usedFallback = true;
+        this._jtFallbackCount++;
+        
+        // If we've been in JT mode too long, snap to current to prevent windup
+        const maxConsecutive = this.config.jtFallbackMaxConsecutive ?? 10;
+        if (this._jtFallbackCount >= maxConsecutive) {
+          logDebug(`[IK_SMART] Max consecutive JT (near-limit) (${maxConsecutive}) reached, snapping to current`);
+          this._snapTargetToCurrent();
+          this._jtFallbackCount = 0;
+          break;
+        }
+      } else {
+        // Joints safe - use full LM solver
+        // LM / trust-region least-squares step, similar to the JAX version:
+        // (J^T W J + λ I) Δ = J^T W e  (+ joint-limit cost)
+        step = this.computeLevenbergMarquardtStep(jacobian);
+        
+        if (step === null) {
+          // LM solver failed to find a valid step (likely at joint limits).
+          // Try Jacobian Transpose fallback if enabled.
+          if (this.config.useJacobianTransposeFallback !== false) {
+            step = this.computeJacobianTransposeFallbackStep(jacobian);
+            usedFallback = true;
+            this._jtFallbackCount++;
+            
+            // If we've been in fallback mode too long, snap to current to prevent windup
+            const maxConsecutive = this.config.jtFallbackMaxConsecutive ?? 10;
+            if (this._jtFallbackCount >= maxConsecutive) {
+              logDebug(`[IK_FALLBACK] Max consecutive JT fallbacks (${maxConsecutive}) reached, snapping to current`);
+              this._snapTargetToCurrent();
+              this._jtFallbackCount = 0;
+              break;
+            }
+            
+            logDebug(`[IK_FALLBACK] LM failed, using Jacobian Transpose fallback (count: ${this._jtFallbackCount})`);
+          } else {
+            // No fallback enabled, snap to current
+            this._snapTargetToCurrent();
+            break;
+          }
+        } else {
+          // LM succeeded, reset fallback counter
+          this._jtFallbackCount = 0;
+        }
+      }
+
       if (!this.applyJointIncrement(step, isPaused)) {
         break;
       }
@@ -685,6 +811,38 @@ export class IKController {
     return posError + this.rotationError.length();
   }
 
+  /**
+   * Check if any controlled joint is near its limits.
+   * Used for smart solver selection to skip expensive LM computation.
+   * @returns {boolean} True if any joint is within the margin of its limits
+   */
+  isAnyJointNearLimit() {
+    const marginFrac = this.config.smartSelectionMarginFraction ?? 0.08;
+    const range = this.model.jnt_range;
+    if (!range) return false;
+
+    for (let k = 0; k < this.controlledDofs.length; k++) {
+      const addr = this.controlledDofs[k];
+      const jointId = this.qposToJointIdMap.get(addr);
+      if (jointId === undefined) continue;
+      if (range.length < (jointId + 1) * 2) continue;
+
+      const lo = range[jointId * 2 + 0];
+      const hi = range[jointId * 2 + 1];
+      if (!(hi > lo)) continue;
+
+      const q = this.data.qpos[addr];
+      const span = hi - lo;
+      const margin = span * marginFrac;
+
+      // Check if joint is within margin of either limit
+      if (q <= lo + margin || q >= hi - margin) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   computeNumericalJacobian() {
     const dofCount = this.controlledDofs.length;
     const jacobian = new Float64Array(dofCount * 6);
@@ -739,6 +897,131 @@ export class IKController {
       }
       step[c] = THREE.MathUtils.clamp(accum, -this.config.stepLimit, this.config.stepLimit);
     }
+    return step;
+  }
+
+  /**
+   * Jacobian Transpose fallback for when LM fails (typically at joint limits).
+   * This is a simpler, more robust method that may not converge as well but won't get stuck.
+   * Key differences from regular JT:
+   * 1. Extra damping to prevent oscillation
+   * 2. Joint-limit aware: reduces step for joints near limits
+   * 3. Proportional scaling based on how close to limits
+   */
+  computeJacobianTransposeFallbackStep(jacobian) {
+    const dofCount = this.controlledDofs.length;
+    const step = new Float64Array(dofCount);
+    
+    // Apply gains to error vector if enabled (makes JT speed closer to LM speed)
+    const useGain = this.config.jtFallbackUseGain !== false;
+    const tGain = useGain ? this.config.translationGain : 1.0;
+    const rGain = useGain ? this.config.rotationGain : 1.0;
+    
+    const errorVec = [
+      this.translationError.x * tGain,
+      this.translationError.y * tGain,
+      this.translationError.z * tGain,
+      this.rotationError.x * rGain,
+      this.rotationError.y * rGain,
+      this.rotationError.z * rGain,
+    ];
+
+    // Get joint limit information for each DOF
+    const jointMargins = new Float64Array(dofCount);
+    const marginFrac = this.config.limitMarginFraction ?? 0.05;
+    
+    for (let k = 0; k < dofCount; k++) {
+      const addr = this.controlledDofs[k];
+      const jointId = this.qposToJointIdMap.get(addr);
+      
+      if (jointId === undefined) {
+        jointMargins[k] = 1.0; // No limit info, allow full movement
+        continue;
+      }
+      
+      const range = this.model.jnt_range;
+      if (!range || range.length < (jointId + 1) * 2) {
+        jointMargins[k] = 1.0;
+        continue;
+      }
+      
+      const lo = range[jointId * 2 + 0];
+      const hi = range[jointId * 2 + 1];
+      if (!(hi > lo)) {
+        jointMargins[k] = 1.0;
+        continue;
+      }
+      
+      const q = this.data.qpos[addr];
+      const span = hi - lo;
+      const margin = Math.max(1e-6, span * marginFrac);
+      
+      // Calculate how "free" this joint is (0 = at limit, 1 = far from limits)
+      const distToLo = q - lo;
+      const distToHi = hi - q;
+      const minDist = Math.min(distToLo, distToHi);
+      
+      if (minDist <= 0) {
+        // At or beyond limit
+        jointMargins[k] = 0.0;
+      } else if (minDist < margin) {
+        // In margin zone, linearly scale down
+        jointMargins[k] = minDist / margin;
+      } else {
+        jointMargins[k] = 1.0;
+      }
+    }
+
+    // Compute basic Jacobian Transpose step: step = J^T * error
+    for (let c = 0; c < dofCount; c++) {
+      let accum = 0;
+      for (let r = 0; r < 6; r++) {
+        accum += jacobian[(r * dofCount) + c] * errorVec[r];
+      }
+      step[c] = accum;
+    }
+
+    // Apply joint-limit-aware damping:
+    // If a joint is near its limit and the step would push it further into the limit, block it.
+    for (let k = 0; k < dofCount; k++) {
+      const addr = this.controlledDofs[k];
+      const jointId = this.qposToJointIdMap.get(addr);
+      
+      if (jointId !== undefined) {
+        const range = this.model.jnt_range;
+        if (range && range.length >= (jointId + 1) * 2) {
+          const lo = range[jointId * 2 + 0];
+          const hi = range[jointId * 2 + 1];
+          const q = this.data.qpos[addr];
+          const span = hi - lo;
+          const margin = Math.max(1e-6, span * (marginFrac * 2)); // Use 2x margin for fallback
+          
+          // If near lower limit and step is negative, reduce/block it
+          if (q < lo + margin && step[k] < 0) {
+            const limitFactor = Math.max(0, (q - lo) / margin);
+            step[k] *= limitFactor;
+          }
+          // If near upper limit and step is positive, reduce/block it
+          else if (q > hi - margin && step[k] > 0) {
+            const limitFactor = Math.max(0, (hi - q) / margin);
+            step[k] *= limitFactor;
+          }
+        }
+      }
+      
+      // Apply the general margin factor (for joints not specifically blocked above)
+      step[k] *= jointMargins[k];
+    }
+
+    // Apply global damping scale (values > 1.0 make JT faster to match LM speed better)
+    const dampingScale = this.config.jtFallbackDampingScale ?? 1.5;
+    
+    // Scale and clamp the step - use same stepLimit as LM for consistency
+    const stepLimit = this.config.stepLimit;
+    for (let c = 0; c < dofCount; c++) {
+      step[c] = THREE.MathUtils.clamp(step[c] * dampingScale, -stepLimit, stepLimit);
+    }
+
     return step;
   }
 
@@ -890,8 +1173,18 @@ export class IKController {
       }
 
       const delta = this.solveLinearSystem(Htrial, gtrial, dofCount);
+      
+      // IMPORTANT: Scale step proportionally instead of per-element clamp.
+      // Per-element clamp distorts the step direction and can make cost increase.
+      let maxAbsDelta = 0;
       for (let i = 0; i < dofCount; i++) {
-        step[i] = THREE.MathUtils.clamp(delta[i], -this.config.stepLimit, this.config.stepLimit);
+        maxAbsDelta = Math.max(maxAbsDelta, Math.abs(delta[i]));
+      }
+      const scaleFactor = (maxAbsDelta > this.config.stepLimit) 
+        ? (this.config.stepLimit / maxAbsDelta) 
+        : 1.0;
+      for (let i = 0; i < dofCount; i++) {
+        step[i] = delta[i] * scaleFactor;
       }
 
       // Predicted pose residual: e - J*Δ
@@ -968,7 +1261,9 @@ export class IKController {
       this._lmLambda = lambda;
     }
 
-    return new Float64Array(dofCount);
+    // If we exhausted all trials without accepting a step, it means the solver failed.
+    // Return null to signal this failure.
+    return null;
   }
 
   solveLinearSystem(A, b, n) {
@@ -1030,7 +1325,7 @@ export class IKController {
 
   applyJointIncrement(step, isPaused = false) {
     if (!step || !step.length) { return false; }
-    
+
     // Always use actuator controls in simulation mode
     // Never fallback to direct qpos setting - this causes conflicts with physics engine
     for (let i = 0; i < this.controlledDofs.length; i++) {
@@ -1050,9 +1345,24 @@ export class IKController {
         throw new Error(`[IKController] No actuator found for joint "${jointName}" qpos[${addr}]. Cannot proceed.`);
       }
       
-      // Get current joint position and add step
+      // Get current joint position (for safety clamping)
       const currentQpos = this.data.qpos[addr];
-      let targetQpos = currentQpos + step[i];
+      
+      // CRITICAL FIX: Use the *previous control value* as the base for the increment,
+      // NOT the current physical position.
+      // 
+      // Old logic: target = current_physical_pos + step
+      // -> This is a pure Proportional controller. If gravity pulls the arm down, 
+      //    the "current_physical_pos" drops, so the next target also drops. 
+      //    It never builds up enough torque to hold the arm up.
+      //
+      // New logic: target = prev_control_val + step
+      // -> This acts as an Integral controller. If the arm sags, the error persists,
+      //    IK calculates a positive step, and we ADD it to the previous command.
+      //    The command value (ctrl) will "wind up" higher and higher until it generates
+      //    enough torque to physically lift the arm to the target.
+      const prevCtrl = this.data.ctrl[actuatorIdx];
+      let targetQpos = prevCtrl + step[i];
 
       // Clamp to actuator ctrlrange if available (prevents "drift" into unreachable space)
       const ctrlRange = this.model.actuator_ctrlrange;
@@ -1065,13 +1375,55 @@ export class IKController {
         }
       }
 
-      // Clamp to joint range as well (hard safety to avoid drifting into joint limits)
+      // Clamp to joint range with safety margin (prevents entering dangerous territory)
       const jointId = this.qposToJointIdMap.get(addr);
       const jntRange = this.model.jnt_range;
       if (jointId !== undefined && jntRange && jntRange.length >= (jointId + 1) * 2) {
         const jlo = jntRange[jointId * 2 + 0];
         const jhi = jntRange[jointId * 2 + 1];
         if (jhi > jlo) {
+          // Safety margin: create a "soft wall" before the actual limit
+          const useSafety = this.config.useSafetyMargin !== false;
+          const safetyFrac = this.config.safetyMarginFraction ?? 0.03;
+          const span = jhi - jlo;
+          const safetyMargin = useSafety ? (span * safetyFrac) : 0;
+          
+          // Safe limits (with margin)
+          const safeLo = jlo + safetyMargin;
+          const safeHi = jhi - safetyMargin;
+          
+          // Direction-aware clamping:
+          // - If moving toward a limit and would enter safety zone, block at the boundary
+          // - Always allow movements away from limits (to escape if already in danger zone)
+          if (useSafety && safetyMargin > 0) {
+            // Check lower limit
+            if (currentQpos <= safeLo) {
+              // Already in or near danger zone at lower limit
+              if (step[i] < 0) {
+                // Trying to move further toward lower limit - block it
+                targetQpos = Math.max(targetQpos, currentQpos);
+              }
+              // Allow positive step (moving away from lower limit)
+            } else if (targetQpos < safeLo) {
+              // Would enter lower danger zone - clamp to safe boundary
+              targetQpos = safeLo;
+            }
+            
+            // Check upper limit
+            if (currentQpos >= safeHi) {
+              // Already in or near danger zone at upper limit
+              if (step[i] > 0) {
+                // Trying to move further toward upper limit - block it
+                targetQpos = Math.min(targetQpos, currentQpos);
+              }
+              // Allow negative step (moving away from upper limit)
+            } else if (targetQpos > safeHi) {
+              // Would enter upper danger zone - clamp to safe boundary
+              targetQpos = safeHi;
+            }
+          }
+          
+          // Hard clamp to absolute limits (final safety net)
           targetQpos = THREE.MathUtils.clamp(targetQpos, jlo, jhi);
         }
       }
@@ -1085,7 +1437,7 @@ export class IKController {
       // Set actuator control to target position
       this.data.ctrl[actuatorIdx] = targetQpos;
     }
-    
+
     return true;
   }
 
@@ -1126,5 +1478,24 @@ export class IKController {
     quatBuffer[quatAddr + 3] = mujocoQuat.z;
 
     this.targetDirty = false;
+  }
+
+  _snapTargetToCurrent() {
+    // console.log('[IKController] Snapping target to current pose (Stall/Fail protection)');
+    logDebug('[IK_SNAP] Snapping target to current pose');
+    this.targetPosition.copy(this.currentPose.position);
+    this.targetQuaternion.copy(this.currentPose.quaternion).normalize();
+    
+    // When snapping, we MUST update the lock reference too, otherwise the next move
+    // will try to snap back to the old (unreachable) orientation.
+    if (this.config.lockOrientationOnTranslate) {
+      this._lockedQuaternion.copy(this.currentPose.quaternion).normalize();
+    }
+    
+    // Reset internal solver state
+    this._lmLambda = this.config.lambdaInitial ?? 0.1;
+    this.targetDirty = false;
+    this._stallCount = 0;
+    this._jtFallbackCount = 0;  // Reset fallback counter
   }
 }
