@@ -31,14 +31,23 @@ export class CheckerManager {
     console.log('[CheckerManager] Setting up checkers from task config:', JSON.stringify(this.checkerConfig, null, 2));
     
     try {
-      // Flat config only: checker_config must be a checker definition itself.
-      if (this.checkerConfig.type) {
-        console.log('[CheckerManager] Creating checker from task config.type');
+      // Format 1: { checker: { type: ... } } - nested checker field
+      if (this.checkerConfig.checker) {
+        console.log('[CheckerManager] Creating checker from task config.checker');
+        this.mainChecker = this.createChecker(this.checkerConfig.checker);
+        console.log('[CheckerManager] Main checker created:', this.mainChecker.constructor?.name);
+      }
+      // Format 2: { type: ... } - direct checker config (from tasks.json)
+      else if (this.checkerConfig.type) {
+        console.log('[CheckerManager] Creating checker from direct task config (has type field)');
         this.mainChecker = this.createChecker(this.checkerConfig);
         console.log('[CheckerManager] Main checker created:', this.mainChecker.constructor?.name);
-        return;
       }
-      console.warn('[CheckerManager] checker_config must be a flat checker definition with "type". Skipping checker setup.');
+      // Format 3: Legacy format - multiple checkers as object keys
+      else {
+        console.log('[CheckerManager] Using legacy format, creating individual checkers from task config');
+        this.setupLegacyCheckers();
+      }
     } catch (error) {
       console.error('[CheckerManager] Failed to setup checkers from task config:', error);
       throw error;
@@ -159,7 +168,7 @@ export class CheckerManager {
 
   /**
    * Get a lightweight summary of which success conditions are NOT met.
-   * Designed for periodic console logging like: x / z / rotation.
+   * Designed for periodic console logging.
    */
   getUnmetConditionsSummary() {
     const status = this.getStatus();
@@ -168,29 +177,6 @@ export class CheckerManager {
     const handleLeaf = (type, leafStatus) => {
       if (!type) return;
       if (!leafStatus || typeof leafStatus !== 'object') return;
-
-      // Sample position deltas -> report x / z separately
-      if (type === 'SamplePositionDeltaChecker' && leafStatus.delta && leafStatus.thresholds) {
-        const dx = Number(leafStatus.delta.x);
-        const dz = Number(leafStatus.delta.z);
-        const minDx = Number(leafStatus.thresholds.minDeltaX);
-        const minDz = Number(leafStatus.thresholds.minDeltaZ);
-        if (Number.isFinite(dx) && Number.isFinite(minDx) && dx < minDx) missing.add('x');
-        if (Number.isFinite(dz) && Number.isFinite(minDz) && dz < minDz) missing.add('z');
-        return;
-      }
-
-      // Rotation tilt
-      if (type === 'SampleRotationChecker') {
-        const angle = Number(leafStatus.tipAngle);
-        const threshold = Number(leafStatus.threshold);
-        if (Number.isFinite(angle) && Number.isFinite(threshold) && angle < threshold) {
-          missing.add('rotation');
-        } else if (leafStatus.success === false) {
-          missing.add('rotation');
-        }
-        return;
-      }
 
       // Fallback: if checker reports success=false, include its type
       if (leafStatus.success === false) {
