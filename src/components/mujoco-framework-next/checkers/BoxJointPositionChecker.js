@@ -1,11 +1,7 @@
 /**
  * BoxJointPositionChecker
- * Checks if the box joint position meets a threshold condition (success condition)
- * For close_box task: checks if box lid is closed (position < threshold)
- * 
- * Supports two config formats:
- * 1. Legacy: { threshold, jointName }
- * 2. Task config: { target_position, tolerance, joint_name, comparison }
+ * Checks if the box joint position is less than a threshold (success condition)
+ * For close_box task: checks if box lid is closed (position < -14 degrees in radians)
  */
 export class BoxJointPositionChecker {
   constructor(mujoco, model, data, options = {}) {
@@ -13,22 +9,10 @@ export class BoxJointPositionChecker {
     this.model = model;
     this.data = data;
     
-    // Support both camelCase and snake_case config formats
-    this.jointName = options.jointName || options.joint_name || 'box_base/box_joint';
-    
-    // Support task config format: target_position + tolerance
-    if (options.target_position !== undefined) {
-      const target = Number(options.target_position);
-      const tolerance = Number(options.tolerance ?? 0.1);
-      this.threshold = target + tolerance;
-    } else {
-      // Legacy format: direct threshold
-      // Default threshold: -14 degrees = -14 * π / 180 ≈ -0.244346 radians
-      this.threshold = options.threshold ?? (-14 / 180 * Math.PI);
-    }
-    
-    // Comparison mode: 'less_than' (default) or 'greater_than'
-    this.comparison = options.comparison || 'less_than';
+    // Configuration
+    // Default threshold: -14 degrees = -14 * π / 180 ≈ -0.244346 radians
+    this.threshold = options.threshold ?? (-14 / 180 * Math.PI);
+    this.jointName = options.jointName ?? 'box_base/box_joint';
     
     this.textDecoder = new TextDecoder('utf-8');
     this.namesBuffer = new Uint8Array(model.names);
@@ -39,7 +23,7 @@ export class BoxJointPositionChecker {
     if (this.jointAddress < 0) {
       console.warn(`[BoxJointPositionChecker] Joint "${this.jointName}" not found`);
     } else {
-      console.log(`[BoxJointPositionChecker] Initialized with joint "${this.jointName}", threshold=${this.threshold.toFixed(6)} radians, comparison="${this.comparison}"`);
+      console.log(`[BoxJointPositionChecker] Initialized with joint "${this.jointName}", threshold=${this.threshold.toFixed(6)} radians (${(this.threshold * 180 / Math.PI).toFixed(2)} degrees)`);
     }
   }
   
@@ -59,8 +43,8 @@ export class BoxJointPositionChecker {
   }
   
   /**
-   * Check if box joint position meets threshold condition (success condition)
-   * @returns {boolean} True if condition met, false otherwise
+   * Check if box joint position < threshold (success condition)
+   * @returns {boolean} True if box joint position < threshold, false otherwise
    */
   check() {
     if (this.jointAddress < 0) {
@@ -72,11 +56,6 @@ export class BoxJointPositionChecker {
     }
     
     const position = this.data.qpos[this.jointAddress];
-    
-    if (this.comparison === 'greater_than') {
-      return position > this.threshold;
-    }
-    // Default: less_than
     return position < this.threshold;
   }
   
@@ -106,19 +85,20 @@ export class BoxJointPositionChecker {
    */
   getStatus() {
     const position = this.getPosition();
+    const positionDegrees = this.getPositionDegrees();
     const isSuccess = this.check();
-    const compOp = this.comparison === 'greater_than' ? '>' : '<';
-    const compOpNot = this.comparison === 'greater_than' ? '<=' : '>=';
+    const thresholdDegrees = this.threshold * 180 / Math.PI;
     
     return {
       success: isSuccess,
       threshold: this.threshold,
+      thresholdDegrees: thresholdDegrees,
       position: position,
-      comparison: this.comparison,
+      positionDegrees: positionDegrees,
       jointName: this.jointName,
       message: isSuccess 
-        ? `Success! (position: ${position !== null ? position.toFixed(4) : 'N/A'} ${compOp} ${this.threshold.toFixed(4)})`
-        : `Not yet (position: ${position !== null ? position.toFixed(4) : 'N/A'} ${compOpNot} ${this.threshold.toFixed(4)})`
+        ? `盒子已关闭 (位置: ${positionDegrees !== null ? positionDegrees.toFixed(2) : 'N/A'}° < ${thresholdDegrees.toFixed(2)}°)`
+        : `盒子未关闭 (位置: ${positionDegrees !== null ? positionDegrees.toFixed(2) : 'N/A'}° >= ${thresholdDegrees.toFixed(2)}°)`
     };
   }
   
