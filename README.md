@@ -62,7 +62,9 @@ https://github.com/user-attachments/assets/6f25324c-f765-45a0-8658-d4e4c4e4ec1e
   Capture and export control data for learning and analysis
 
 - **Frontend-Only Architecture**  
-  Zero backend dependencies — works out of the box
+  Zero backend dependencies — works out of the box. The browser demo is not a
+  security boundary for scored tasks or rewards; production deployments must
+  verify task completion on a trusted backend.
 
 - **Modular Design**  
   Easy to extend with new tasks, checkers, and robot models
@@ -189,6 +191,11 @@ The platform includes a demonstration task where the robot must push a box lid c
 ---
 
 ## Adding New Tasks
+
+> Security note: task definitions, checker configuration, trajectory exports,
+> and completion flags are client-visible in this demo. If completion affects
+> accounts, leaderboards, payouts, rewards, or reputation, follow the backend
+> verification contract in [Task Completion Verification](docs/task-completion-verification.md).
 
 ### Step 1: Create Scene File
 
