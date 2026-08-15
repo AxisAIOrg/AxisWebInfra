@@ -3,9 +3,12 @@
  */
 
 // Declare global type for mujoco module loaded via script tag
+type MujocoLoader = () => Promise<unknown>;
+type MujocoImport = { default?: MujocoLoader };
+
 declare global {
   interface Window {
-    load_mujoco?: () => Promise<any>;
+    load_mujoco?: MujocoLoader;
   }
 }
 
@@ -13,13 +16,13 @@ declare global {
  * Load MuJoCo module using script tag (bypasses webpack completely)
  * This is the working strategy that loads MuJoCo WASM at runtime
  */
-export async function loadMujoco() {
+export async function loadMujoco(): Promise<unknown> {
   if (typeof window === "undefined") {
     throw new Error("MuJoCo can only be loaded in the browser");
   }
   
   // Strategy: Load via script tag (completely bypasses webpack)
-  const loadViaScript = (): Promise<any> => {
+  const loadViaScript = (): Promise<MujocoLoader> => {
     return new Promise((resolve, reject) => {
       // Check if already loaded
       if (window.load_mujoco) {
@@ -45,13 +48,22 @@ export async function loadMujoco() {
           try {
             const importModule = new Function(
               'return import("/mujoco-js/dist/mujoco_wasm.js")'
-            ) as () => Promise<any>;
+             ) as () => Promise<MujocoImport | MujocoLoader>;
             
-            const module = await importModule();
-            const loader = module.default || module;
+            const loadedModule = await importModule();
+            // Runtime narrowing for the dynamically imported module
+            const loader =
+              typeof loadedModule === "function"
+                ? loadedModule
+                : loadedModule.default;
+
+            if (!loader) {
+              throw new Error("MuJoCo module did not expose a loader");
+            }
+            
             window.load_mujoco = loader;
             resolve(loader);
-          } catch (importError: any) {
+          } catch (importError: unknown) {
             reject(importError);
           }
         }, 100);
@@ -79,7 +91,8 @@ export async function loadMujoco() {
     }
     
     return mujocoInstance;
-  } catch (error) {
+  } catch (error: unknown) {
+    // Import failures remain propagated as errors rather than being hidden behind an untyped value
     console.error("[MuJoCo Utils] Failed to load MuJoCo module:", error);
     throw error;
   }
@@ -115,5 +128,3 @@ export function getQuat(
     -buffer[index * 4 + 0],
   ];
 }
-
-

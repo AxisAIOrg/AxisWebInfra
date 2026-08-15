@@ -6,8 +6,8 @@
  */
 
 export type DomainRandomizationConfig = {
-  objects?: Record<string, any>;
-  robots?: Record<string, any>;
+  objects?: Record<string, unknown>;
+  robots?: Record<string, unknown>;
 };
 
 export type TaskMetadata = {

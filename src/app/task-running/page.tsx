@@ -14,6 +14,10 @@ type MissionStep = {
   completed: boolean;
 };
 
+type DemoStatus = { isSuccess: boolean; time: number; fps?: number; [key: string]: unknown };
+type ExportedTrajectory = { trajectory: unknown[]; metadata: Record<string, unknown>; exportedAt: string };
+type DemoInternals = { resizeObserver?: ResizeObserver; renderer?: { setAnimationLoop?: (callback: (() => void) | null) => void }; container?: HTMLElement };
+
 type DemoLoadingProgress = {
   phase: string;
   message?: string;
@@ -106,10 +110,10 @@ function TaskRunningPageContent() {
       durationSec: "0.0",
     },
     completedTrajectories: 0,
-    trajectorySteps: [] as any[],
+    trajectorySteps: [] as unknown[],
   });
   const [isCompleted, setIsCompleted] = useState(false);
-  const [finalStatus, setFinalStatus] = useState<any>(null);
+  const [finalStatus, setFinalStatus] = useState<DemoStatus | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
@@ -117,7 +121,7 @@ function TaskRunningPageContent() {
   const [missionSteps, setMissionSteps] = useState<MissionStep[]>([]);
   const [demoLoading, setDemoLoading] = useState<boolean>(false);
   const [demoLoadingProgress, setDemoLoadingProgress] = useState<DemoLoadingProgress | null>(null);
-  const [lastTrajectory, setLastTrajectory] = useState<any>(null);
+  const [lastTrajectory, setLastTrajectory] = useState<DemoStatus | null>(null);
   
   const containerRef = useRef<HTMLDivElement | null>(null);
   const demoRef = useRef<MuJoCoDemo | null>(null);
@@ -195,7 +199,7 @@ function TaskRunningPageContent() {
       },
     });
 
-    demo.onStatusUpdate = (statusData: any) => {
+    demo.onStatusUpdate = (statusData: DemoStatus) => {
       if (!cancelled && !isCompleted) {
         setStatus(statusData);
         if (statusData.fps) {
@@ -204,7 +208,7 @@ function TaskRunningPageContent() {
       }
     };
 
-    demo.onTrajectoryExport = (trajectory: any[], metadata: any) => {
+    demo.onTrajectoryExport = (trajectory: unknown[], metadata: Record<string, unknown>) => {
       if (cancelled) return;
       
       setStatus((currentStatus) => {
@@ -247,16 +251,16 @@ function TaskRunningPageContent() {
         demo.stopStatusBroadcasting();
       }
 
-      if ((demo as any).resizeObserver) {
-        (demo as any).resizeObserver.disconnect();
+      if ((demo as MuJoCoDemo & DemoInternals).resizeObserver) {
+        (demo as MuJoCoDemo & DemoInternals).resizeObserver.disconnect();
       }
 
       try {
-        if ((demo as any).renderer?.setAnimationLoop) {
-          (demo as any).renderer.setAnimationLoop(null);
+        if ((demo as MuJoCoDemo & DemoInternals).renderer?.setAnimationLoop) {
+          (demo as MuJoCoDemo & DemoInternals).renderer.setAnimationLoop(null);
         }
-        if ((demo as any).container?.parentElement) {
-          (demo as any).container.parentElement.removeChild((demo as any).container);
+        if ((demo as MuJoCoDemo & DemoInternals).container?.parentElement) {
+          (demo as MuJoCoDemo & DemoInternals).container.parentElement.removeChild((demo as MuJoCoDemo & DemoInternals).container);
         }
       } catch (e) {
         console.warn("[task-running] Cleanup warning:", e);
