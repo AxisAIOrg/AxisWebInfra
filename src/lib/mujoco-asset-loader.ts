@@ -1,3 +1,5 @@
+type MujocoRuntime = { FS: { writeFile: (path: string, data: string | Uint8Array) => void; mkdir: (path: string) => void } };
+
 /**
  * Utility functions for loading MuJoCo assets (textures, meshes) into the virtual file system
  */
@@ -70,7 +72,7 @@ async function getZipIndex(zipUrl: string): Promise<AssetZipIndex> {
  * Load a file from a URL and write it to MuJoCo's virtual file system
  */
 export async function loadAssetToVFS(
-  mujoco: any,
+  mujoco: MujocoRuntime,
   url: string,
   vfsPath: string
 ): Promise<void> {
@@ -126,7 +128,7 @@ export function extractAssetPaths(xml: string): { textures: string[]; meshes: st
  * Assets are loaded from the frontend public directory /mujoco-assets/
  */
 export async function loadMuJoCoAssets(
-  mujoco: any,
+  mujoco: MujocoRuntime,
   xml: string,
   baseUrlOrOptions?: string | { baseUrl?: string; zipUrl?: string; zipOnly?: boolean }
 ): Promise<void> {
@@ -184,13 +186,13 @@ export async function loadMuJoCoAssets(
           currentPath = `${currentPath}/${part}`;
           try {
             mujoco.FS.mkdir(currentPath);
-          } catch (e: any) {
-            if (!e.message?.includes('File exists')) {
+          } catch (e: unknown) {
+            if (!(e instanceof Error) || !e.message.includes('File exists')) {
               throw e;
             }
           }
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.warn(`Could not create directory ${vfsDirPath}:`, e);
       }
     }

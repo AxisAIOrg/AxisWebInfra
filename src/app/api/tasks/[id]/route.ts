@@ -12,8 +12,8 @@ type Task = {
   thumbnail: string;
   time_limit: number | null;
   mjcf_xml: string | null;
-  checker_config: Record<string, any> | null;
-  initial_state: Record<string, any> | null;
+  checker_config: Record<string, unknown> | null;
+  initial_state: Record<string, unknown> | null;
   steps: { order: number; description: string }[] | null;
   rarity: string | null;
   base_points: number | null;

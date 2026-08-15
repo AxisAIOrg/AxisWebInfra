@@ -18,8 +18,8 @@ export type Task = {
   thumbnail: string;
   time_limit: number | null;
   mjcf_xml: string | null;
-  checker_config: Record<string, any> | null;
-  initial_state: Record<string, any> | null;
+  checker_config: Record<string, unknown> | null;
+  initial_state: Record<string, unknown> | null;
   steps: TaskStep[] | null;
   rarity: string | null;
   base_points: number | null;
@@ -65,7 +65,7 @@ export async function getTask(id: number): Promise<Task | null> {
 /**
  * 下载轨迹数据为 JSON 文件
  */
-export function downloadTrajectory(trajectory: any, filename?: string): void {
+export function downloadTrajectory(trajectory: unknown, filename?: string): void {
   const blob = new Blob([JSON.stringify(trajectory, null, 2)], { 
     type: 'application/json' 
   });
@@ -82,7 +82,7 @@ export function downloadTrajectory(trajectory: any, filename?: string): void {
 /**
  * 保存轨迹到本地存储（可选）
  */
-export function saveTrajectoryToLocal(taskId: number, trajectory: any): void {
+export function saveTrajectoryToLocal(taskId: number, trajectory: unknown): void {
   try {
     const key = `trajectory_task_${taskId}_${Date.now()}`;
     localStorage.setItem(key, JSON.stringify(trajectory));
@@ -95,8 +95,8 @@ export function saveTrajectoryToLocal(taskId: number, trajectory: any): void {
 /**
  * 获取本地存储的轨迹列表
  */
-export function getLocalTrajectories(taskId?: number): { key: string; data: any }[] {
-  const trajectories: { key: string; data: any }[] = [];
+export function getLocalTrajectories(taskId?: number): { key: string; data: unknown }[] {
+  const trajectories: { key: string; data: unknown }[] = [];
   
   try {
     for (let i = 0; i < localStorage.length; i++) {

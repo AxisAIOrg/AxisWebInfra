@@ -4,7 +4,7 @@
   "private": true,
   "description": "Open-source robot teleoperation demo using MuJoCo physics simulation",
   "scripts": {
-    "copy-mujoco": "mkdir -p public/mujoco-js/dist && cp -r node_modules/mujoco-js/dist/* public/mujoco-js/dist/",
+    "copy-mujoco": "node scripts/copy-mujoco.mjs",
     "postinstall": "npm run copy-mujoco",
     "dev": "next dev --webpack",
     "build": "npm run copy-mujoco && next build --webpack",
