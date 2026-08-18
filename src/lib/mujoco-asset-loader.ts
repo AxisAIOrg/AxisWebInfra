@@ -26,19 +26,20 @@ function normalizeZipPath(path: string): string {
 
 function buildZipCandidates(assetPath: string): string[] {
   const normalized = normalizeZipPath(assetPath);
-  const withoutUnderscorePrefix = normalized.startsWith("mujoco_assets/")
-    ? normalized.slice("mujoco_assets/".length)
-    : normalized;
-  const withoutHyphenPrefix = normalized.startsWith("mujoco-assets/")
-    ? normalized.slice("mujoco-assets/".length)
-    : normalized;
-  const candidates = new Set<string>();
+  // Strip whichever known prefix is present to get a prefix-agnostic stem,
+  // so both prefix flavors resolve to the same candidate set.
+  let stem = normalized;
+  if (stem.startsWith("mujoco-assets/")) {
+    stem = stem.slice("mujoco-assets/".length);
+  } else if (stem.startsWith("mujoco_assets/")) {
+    stem = stem.slice("mujoco_assets/".length);
+  }
 
+  const candidates = new Set<string>();
   candidates.add(normalized);
-  candidates.add(withoutUnderscorePrefix);
-  candidates.add(withoutHyphenPrefix);
-  candidates.add(`mujoco-assets/${withoutUnderscorePrefix}`);
-  candidates.add(`mujoco_assets/${withoutUnderscorePrefix}`);
+  candidates.add(stem);
+  candidates.add(`mujoco-assets/${stem}`);
+  candidates.add(`mujoco_assets/${stem}`);
 
   return Array.from(candidates).filter(Boolean);
 }
