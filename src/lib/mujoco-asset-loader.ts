@@ -160,7 +160,14 @@ export async function loadMuJoCoAssets(
   }
   
   // Create necessary directories and load each asset
-  for (const assetPath of uniqueAssets) {
+  for (const rawAssetPath of uniqueAssets) {
+    // Normalize the path exactly as buildZipCandidates does for the zip lookup,
+    // so a "../" sequence embedded in the task XML's file="..." attribute can't
+    // escape the intended assets directory when we fall back to a direct fetch.
+    // Without this, the zip-lookup path was traversal-safe but this fallback
+    // path used the raw, unsanitized string straight from the XML.
+    const assetPath = normalizeZipPath(rawAssetPath);
+
     // Strip directory prefix from API path (backend already knows this directory)
     // But keep it for VFS path (MuJoCo needs the full path as specified in XML)
     let apiPath = assetPath;
