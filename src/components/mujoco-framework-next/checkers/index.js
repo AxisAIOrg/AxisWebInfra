@@ -7,6 +7,7 @@
 import { GripperOpenChecker } from './GripperOpenChecker.js';
 import { BoxJointPositionChecker } from './BoxJointPositionChecker.js';
 import { CompositeChecker } from './CompositeChecker.js';
+import { BodyContactChecker } from './BodyContactChecker.js';
 /**
  * Registry mapping checker type names to their classes
  */
@@ -14,10 +15,12 @@ export const CHECKER_REGISTRY = {
   GripperOpenChecker,
   BoxJointPositionChecker,
   CompositeChecker,
+  BodyContactChecker,
   // Aliases for task config compatibility
   joint_position: BoxJointPositionChecker,
   composite: CompositeChecker,
   gripper_open: GripperOpenChecker,
+  body_contact: BodyContactChecker,
 };
 
 /**
