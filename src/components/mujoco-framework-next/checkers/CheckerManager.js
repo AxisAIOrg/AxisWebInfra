@@ -97,6 +97,19 @@ export class CheckerManager {
       });
     }
     
+    // Handle OrderedStepChecker (resolves sub-checkers via createChecker)
+    if (config.type === 'OrderedStepChecker' || config.type === 'ordered_step') {
+      if (!config.steps || !Array.isArray(config.steps) || config.steps.length === 0) {
+        throw new Error('[CheckerManager] OrderedStepChecker requires a non-empty steps array');
+      }
+      const subCheckers = config.steps.map((subConfig) => this.createChecker(subConfig));
+      const OrderedStepCheckerClass = getCheckerClass('OrderedStepChecker');
+      return new OrderedStepCheckerClass(this.mujoco, this.model, this.data, {
+        checkers: subCheckers,
+        allow_reentry: config.allow_reentry,
+      });
+    }
+
     // Handle single checker (lookup from registry)
     return this.createCheckerInstance(config.type, config);
   }
