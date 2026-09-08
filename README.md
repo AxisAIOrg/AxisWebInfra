@@ -2,7 +2,7 @@
 
 # AxisWebInfra
 
-**An open-source robot teleoperation platform using MuJoCo physics simulation in the broswer!**
+**An open-source robot teleoperation platform using MuJoCo physics simulation in the browser!**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
@@ -86,8 +86,8 @@ https://github.com/user-attachments/assets/6f25324c-f765-45a0-8658-d4e4c4e4ec1e
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/axis-mujoco-infra.git
-cd axis-mujoco-infra
+git clone https://github.com/AxisAIOrg/AxisWebInfra.git
+cd AxisWebInfra
 
 # Install dependencies
 npm install
