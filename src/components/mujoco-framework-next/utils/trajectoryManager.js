@@ -6,7 +6,48 @@ function getTrajectoryFetchURL(path) {
   return '/' + path;
 }
 
+/**
+ * Accept raw sample arrays, { samples }, or success-download { trajectory } payloads.
+ */
+function normalizeTrajectoryInput(input) {
+  if (Array.isArray(input)) return input;
+  if (input && Array.isArray(input.samples)) return input.samples;
+  if (input && Array.isArray(input.trajectory)) return input.trajectory;
+  return null;
+}
+
+/**
+ * serializeTrajectory nests joints under state.* and controls under action.*,
+ * and stores time as simulation_time (seconds). Replay historically only read
+ * flat robot_joints / controls / elapsedMs — unwrap so downloaded demos replay.
+ */
+function flattenTrajectorySample(sample) {
+  if (!sample || typeof sample !== 'object') return sample;
+  const state = sample.state && typeof sample.state === 'object' ? sample.state : null;
+  const action = sample.action && typeof sample.action === 'object' ? sample.action : null;
+  if (!state && !action && sample.elapsedMs != null) return sample;
+
+  const elapsedMs = sample.elapsedMs != null
+    ? sample.elapsedMs
+    : (sample.simulation_time != null ? sample.simulation_time * 1000 : 0);
+
+  return {
+    ...sample,
+    elapsedMs,
+    robot_joints: sample.robot_joints ?? state?.robot_joints,
+    robot_velocities: sample.robot_velocities ?? state?.robot_velocities,
+    controls: sample.controls ?? action?.controls,
+    keyboard: sample.keyboard ?? action?.keyboard,
+    mouse: sample.mouse ?? action?.mouse,
+  };
+}
+
 async function startReplayTrajectory(demo) {
+  // Prefer in-memory samples (V-key save often cannot persist — /api/trajectories may be absent).
+  if (Array.isArray(demo.lastSavedTrajectorySamples) && demo.lastSavedTrajectorySamples.length) {
+    demo.loadTrajectoryFromData(demo.lastSavedTrajectorySamples);
+    return;
+  }
   if (!demo.lastSavedTrajectoryPath) { return; }
   const url = getTrajectoryFetchURL(demo.lastSavedTrajectoryPath);
   if (!url) { return; }
@@ -14,16 +55,18 @@ async function startReplayTrajectory(demo) {
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) { return; }
     const payload = await response.json();
-    if (!Array.isArray(payload.samples) || !payload.samples.length) { return; }
-    demo.loadTrajectoryFromData(payload.samples);
+    const samples = normalizeTrajectoryInput(payload);
+    if (!samples || !samples.length) { return; }
+    demo.loadTrajectoryFromData(samples);
   } catch (error) {
     console.error('[Teleop] Failed to load trajectory:', error);
   }
 }
 
-function loadTrajectoryFromData(demo, samples) {
-  if (!Array.isArray(samples) || !samples.length) {
-    console.error('[Teleop] Invalid trajectory samples:', samples);
+function loadTrajectoryFromData(demo, input) {
+  const samples = normalizeTrajectoryInput(input);
+  if (!samples || !samples.length) {
+    console.error('[Teleop] Invalid trajectory samples:', input);
     return;
   }
   if (!demo.model || !demo.data) {
@@ -35,8 +78,9 @@ function loadTrajectoryFromData(demo, samples) {
   console.log(`[Teleop] First sample structure:`, samples[0]);
 
   try {
-    // Convert samples from API format (with joint names) to replay format (with qpos/qvel arrays)
-    const convertedSamples = samples.map((sample, idx) => {
+    // Convert samples from API / export format to replay format (qpos/qvel/ctrl arrays)
+    const convertedSamples = samples.map((rawSample, idx) => {
+      const sample = flattenTrajectorySample(rawSample);
       const converted = {
         elapsedMs: sample.elapsedMs || 0,
         step: sample.step || idx,

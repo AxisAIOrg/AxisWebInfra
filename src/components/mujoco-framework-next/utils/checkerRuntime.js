@@ -67,9 +67,6 @@ function maybeFinalizeSuccess(demo, timeMS) {
 
   if (!demo.successAchieved && !checkerSuccessNow) return;
 
-  // Mark exported first to avoid any re-entrancy / repeated calls.
-  demo.successExported = true;
-
   // Pause simulation so the UI time stops and state is stable.
   demo.params.paused = true;
   if (demo.guiPauseController) {
@@ -83,10 +80,13 @@ function maybeFinalizeSuccess(demo, timeMS) {
     console.warn('[Teleop] Failed to record final episode sample on success:', e);
   }
 
+  // Only latch successExported after a successful export so a thrown handler
+  // does not permanently discard the demo with no retry.
   try {
     const serializedTrajectory = demo.serializeTrajectory();
     const metadata = demo.buildEpisodeMetadata(demo.currentEpisode);
     demo.onTrajectoryExport(serializedTrajectory, metadata);
+    demo.successExported = true;
   } catch (e) {
     console.error('[Teleop] Failed to export trajectory on success:', e);
   }

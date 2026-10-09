@@ -89,6 +89,7 @@ export class MuJoCoDemo {
     this.replayStartTime = null;
     this.replayPlaying = false;
     this.lastSavedTrajectoryPath = null;
+    this.lastSavedTrajectorySamples = null;
     // Loading progress callback (used by React pages to show progress UI)
     this.onLoadingProgress = options.onLoadingProgress || null;
     // Dynamic checker config (provided by React page from backend task config)
@@ -353,6 +354,8 @@ export class MuJoCoDemo {
     const samples = this.currentEpisode.slice();
     const metadata = this.buildEpisodeMetadata(samples);
     const payload = { version: 1, metadata, samples };
+    // Keep samples in memory so P-key replay works even when POST /api/trajectories is missing.
+    this.lastSavedTrajectorySamples = samples;
     let savedLocation = null;
     try {
       this.isSavingEpisode = true;
@@ -368,6 +371,15 @@ export class MuJoCoDemo {
       console.error('[Teleop] Failed to persist trajectory:', error);
     } finally {
       this.isSavingEpisode = false;
+    }
+    // Always offer a client download when the parent wired onTrajectoryExport
+    // (open-source build has no /api/trajectories route).
+    if (typeof this.onTrajectoryExport === 'function') {
+      try {
+        this.onTrajectoryExport(this.serializeTrajectory(), metadata);
+      } catch (error) {
+        console.error('[Teleop] Failed to export trajectory on episode complete:', error);
+      }
     }
     this.episodes.push(payload);
     this.clearEpisodeState();
