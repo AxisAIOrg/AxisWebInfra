@@ -57,7 +57,19 @@ export async function GET(
     // If task has mjcf_xml path, read the XML content
     if (task.mjcf_xml && !task.mjcf_xml.startsWith('<')) {
       try {
-        const xmlPath = path.join(process.cwd(), 'public', 'mujoco-assets', task.mjcf_xml);
+        const assetsRoot = path.resolve(process.cwd(), 'public', 'mujoco-assets');
+        const xmlPath = path.resolve(assetsRoot, task.mjcf_xml);
+        const relativeToAssets = path.relative(assetsRoot, xmlPath);
+        // Reject path escape (e.g. ../.env) so mjcf_xml cannot read outside mujoco-assets.
+        if (
+          relativeToAssets.startsWith('..')
+          || path.isAbsolute(relativeToAssets)
+        ) {
+          return NextResponse.json(
+            { error: 'Invalid mjcf_xml path' },
+            { status: 400 }
+          );
+        }
         const xmlContent = await fs.readFile(xmlPath, 'utf-8');
         task.mjcf_xml = xmlContent;
       } catch (error) {

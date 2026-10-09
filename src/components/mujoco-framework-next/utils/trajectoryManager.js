@@ -453,13 +453,14 @@ function serializeTrajectory(demo) {
 
           // Extract velocities if available
           if (sample.cvel && b * 6 + 5 < sample.cvel.length) {
-            // cvel contains [lin_vel_x, lin_vel_y, lin_vel_z, ang_vel_x, ang_vel_y, ang_vel_z] per body
-            objectVelocities[bodyName] = [
+            // MuJoCo mjData.cvel is COM spatial velocity packed as
+            // [ang_x, ang_y, ang_z, lin_x, lin_y, lin_z] per body (rot then lin).
+            objectAngularVelocities[bodyName] = [
               sample.cvel[b * 6],
               sample.cvel[b * 6 + 1],
               sample.cvel[b * 6 + 2]
             ];
-            objectAngularVelocities[bodyName] = [
+            objectVelocities[bodyName] = [
               sample.cvel[b * 6 + 3],
               sample.cvel[b * 6 + 4],
               sample.cvel[b * 6 + 5]
